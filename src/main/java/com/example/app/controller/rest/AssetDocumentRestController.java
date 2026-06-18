@@ -4,7 +4,6 @@ import com.example.app.dto.AssetDocumentDTO;
 import com.example.app.service.AssetDocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,37 +13,36 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/assets")
-@Tag(name = "Asset Documents", description = "Asset Document Management API")
+@Tag(name = "Asset Documents", description = "Asset document management API")
 public class AssetDocumentRestController {
 
     private final AssetDocumentService assetDocumentService;
 
-    @Autowired
     public AssetDocumentRestController(AssetDocumentService assetDocumentService) {
         this.assetDocumentService = assetDocumentService;
     }
 
     @GetMapping
-    @Operation(summary = "Get assets by document")
-    public ResponseEntity<List<AssetDocumentDTO>> getAssetsByDocument(
+    @Operation(summary = "Get assets by declaration")
+    public ResponseEntity<List<AssetDocumentDTO>> getAssetsByDeclaration(
             @RequestParam String presentationYear,
             @RequestParam String taxType,
             @RequestParam String presentationCode) {
-        List<AssetDocumentDTO> assets = assetDocumentService.findByDocument(
+        List<AssetDocumentDTO> assets = assetDocumentService.findByDeclaration(
                 presentationYear, taxType, presentationCode);
         return ResponseEntity.ok(assets);
     }
 
-    @GetMapping("/{assetSequence}")
+    @GetMapping("/{presentationYear}/{taxType}/{presentationCode}/{assetSequence}")
     @Operation(summary = "Get asset by ID")
     public ResponseEntity<AssetDocumentDTO> getAssetById(
-            @RequestParam String presentationYear,
-            @RequestParam String taxType,
-            @RequestParam String presentationCode,
+            @PathVariable String presentationYear,
+            @PathVariable String taxType,
+            @PathVariable String presentationCode,
             @PathVariable String assetSequence) {
-        AssetDocumentDTO asset = assetDocumentService.findById(
-                presentationYear, taxType, presentationCode, assetSequence);
-        return ResponseEntity.ok(asset);
+        return assetDocumentService.findById(presentationYear, taxType, presentationCode, assetSequence)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -54,35 +52,30 @@ public class AssetDocumentRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @PutMapping("/{assetSequence}")
+    @PutMapping("/{presentationYear}/{taxType}/{presentationCode}/{assetSequence}")
     @Operation(summary = "Update asset")
     public ResponseEntity<AssetDocumentDTO> updateAsset(
+            @PathVariable String presentationYear,
+            @PathVariable String taxType,
+            @PathVariable String presentationCode,
             @PathVariable String assetSequence,
             @Valid @RequestBody AssetDocumentDTO dto) {
+        dto.setPresentationYear(presentationYear);
+        dto.setTaxType(taxType);
+        dto.setPresentationCode(presentationCode);
         dto.setAssetSequence(assetSequence);
         AssetDocumentDTO updated = assetDocumentService.update(dto);
         return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/{assetSequence}")
+    @DeleteMapping("/{presentationYear}/{taxType}/{presentationCode}/{assetSequence}")
     @Operation(summary = "Delete asset")
     public ResponseEntity<Void> deleteAsset(
-            @RequestParam String presentationYear,
-            @RequestParam String taxType,
-            @RequestParam String presentationCode,
+            @PathVariable String presentationYear,
+            @PathVariable String taxType,
+            @PathVariable String presentationCode,
             @PathVariable String assetSequence) {
         assetDocumentService.delete(presentationYear, taxType, presentationCode, assetSequence);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/next-sequence")
-    @Operation(summary = "Get next asset sequence")
-    public ResponseEntity<String> getNextSequence(
-            @RequestParam String presentationYear,
-            @RequestParam String taxType,
-            @RequestParam String presentationCode) {
-        String nextSequence = assetDocumentService.getNextAssetSequence(
-                presentationYear, taxType, presentationCode);
-        return ResponseEntity.ok(nextSequence);
     }
 }

@@ -2,11 +2,12 @@ package com.example.app.entity;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
-@Table(name = "GATA_BIENCUBA")
+@Table(name = "GATA_BIENVEHI")
 @IdClass(AssetDocumentId.class)
-public class BankAccount {
+public class VehicleAsset {
 
     @Id
     @Column(name = "AAPRESENTA", length = 4)
@@ -24,11 +25,23 @@ public class BankAccount {
     @Column(name = "CDSECUBIEN", length = 3)
     private String assetSequence;
 
-    @Column(name = "TLENTIDEPO", length = 100)
-    private String financialInstitution;
+    @Column(name = "FCMATRICUL")
+    private LocalDate registrationDate;
 
-    @Column(name = "TLDEPOSITO", length = 34)
-    private String accountNumber;
+    @Column(name = "CDVEHITIPO", length = 1)
+    private String vehicleType;
+
+    @Column(name = "CDVEHIMARC", length = 3)
+    private String brandCode;
+
+    @Column(name = "CDVEHIMODE", length = 5)
+    private String modelCode;
+
+    @Column(name = "NMCILINDCC")
+    private Integer engineDisplacement;
+
+    @Column(name = "DSBIENVEHI", length = 200)
+    private String vehicleDescription;
 
     @Column(name = "PCTRANSMIS", precision = 5, scale = 2)
     private BigDecimal transmissionPercentage;
@@ -45,7 +58,7 @@ public class BankAccount {
     @Column(name = "CDPOSBIEN2", length = 1)
     private String assetPosition;
 
-    public BankAccount() {
+    public VehicleAsset() {
     }
 
     public String getPresentationYear() {
@@ -80,20 +93,52 @@ public class BankAccount {
         this.assetSequence = assetSequence;
     }
 
-    public String getFinancialInstitution() {
-        return financialInstitution;
+    public LocalDate getRegistrationDate() {
+        return registrationDate;
     }
 
-    public void setFinancialInstitution(String financialInstitution) {
-        this.financialInstitution = financialInstitution;
+    public void setRegistrationDate(LocalDate registrationDate) {
+        this.registrationDate = registrationDate;
     }
 
-    public String getAccountNumber() {
-        return accountNumber;
+    public String getVehicleType() {
+        return vehicleType;
     }
 
-    public void setAccountNumber(String accountNumber) {
-        this.accountNumber = accountNumber;
+    public void setVehicleType(String vehicleType) {
+        this.vehicleType = vehicleType;
+    }
+
+    public String getBrandCode() {
+        return brandCode;
+    }
+
+    public void setBrandCode(String brandCode) {
+        this.brandCode = brandCode;
+    }
+
+    public String getModelCode() {
+        return modelCode;
+    }
+
+    public void setModelCode(String modelCode) {
+        this.modelCode = modelCode;
+    }
+
+    public Integer getEngineDisplacement() {
+        return engineDisplacement;
+    }
+
+    public void setEngineDisplacement(Integer engineDisplacement) {
+        this.engineDisplacement = engineDisplacement;
+    }
+
+    public String getVehicleDescription() {
+        return vehicleDescription;
+    }
+
+    public void setVehicleDescription(String vehicleDescription) {
+        this.vehicleDescription = vehicleDescription;
     }
 
     public BigDecimal getTransmissionPercentage() {

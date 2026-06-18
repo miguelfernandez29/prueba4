@@ -16,23 +16,24 @@ public interface AssetDocumentRepository extends JpaRepository<AssetDocument, As
     List<AssetDocument> findByPresentationYearAndTaxTypeAndPresentationCode(
             String presentationYear, String taxType, String presentationCode);
 
-    @Query("SELECT COALESCE(MAX(CAST(a.assetSequence AS integer)), 0) + 1 FROM AssetDocument a " +
+    @Query("SELECT COALESCE(MAX(CAST(a.assetSequence AS integer)), 0) FROM AssetDocument a " +
             "WHERE a.presentationYear = :year AND a.taxType = :taxType AND a.presentationCode = :code")
-    Integer findNextAssetSequence(@Param("year") String presentationYear,
+    Integer findMaxAssetSequence(@Param("year") String presentationYear,
                                   @Param("taxType") String taxType,
                                   @Param("code") String presentationCode);
 
-    @Query("SELECT COUNT(a) FROM AssetDocument a WHERE a.presentationYear = :year " +
-            "AND a.taxType = :taxType AND a.presentationCode = :code AND a.assetSequence = :seq")
+    @Query("SELECT COUNT(a) FROM AssetDocument a " +
+            "WHERE a.presentationYear = :year AND a.taxType = :taxType " +
+            "AND a.presentationCode = :code AND a.assetSequence = :seq")
     Long countByKey(@Param("year") String presentationYear,
                     @Param("taxType") String taxType,
                     @Param("code") String presentationCode,
                     @Param("seq") String assetSequence);
 
-    @Query("SELECT a FROM AssetDocument a WHERE a.presentationYear = :year " +
-            "AND a.taxType = :taxType AND a.presentationCode = :code " +
-            "AND a.verificationDate IS NOT NULL AND a.verificationId IS NOT NULL " +
-            "AND a.assetSequence = :seq")
+    @Query("SELECT a FROM AssetDocument a " +
+            "WHERE a.presentationYear = :year AND a.taxType = :taxType " +
+            "AND a.presentationCode = :code AND a.verificationDate IS NOT NULL " +
+            "AND a.verificationId IS NOT NULL AND a.assetSequence = :seq")
     Optional<AssetDocument> findVerifiedAsset(@Param("year") String presentationYear,
                                                @Param("taxType") String taxType,
                                                @Param("code") String presentationCode,

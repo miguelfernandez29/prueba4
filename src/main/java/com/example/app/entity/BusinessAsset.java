@@ -1,19 +1,12 @@
 package com.example.app.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Column;
-import java.io.Serializable;
+import javax.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "GATA_BIENACEM")
 @IdClass(AssetDocumentId.class)
-public class BusinessAsset implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class BusinessAsset {
 
     @Id
     @Column(name = "AAPRESENTA", length = 4)
@@ -32,19 +25,19 @@ public class BusinessAsset implements Serializable {
     private String assetSequence;
 
     @Column(name = "ITACTIEMPR", length = 1)
-    private String isBusinessActivity;
+    private String businessActivity;
 
     @Column(name = "TLEPIGRAFE", length = 10)
     private String activityCode;
 
     @Column(name = "DSBIENACEM", length = 200)
-    private String assetDescription;
+    private String businessDescription;
 
     @Column(name = "ITREDUCCIO", length = 1)
     private String hasReduction;
 
     @Column(name = "ITBIENAFEC", length = 1)
-    private String isAffectedAsset;
+    private String affectedAsset;
 
     @Column(name = "CDPROVINCI", length = 2)
     private String provinceCode;
@@ -64,17 +57,29 @@ public class BusinessAsset implements Serializable {
     @Column(name = "TLCODIPOST", length = 5)
     private String postalCode;
 
+    @Column(name = "TLESCALERA", length = 10)
+    private String staircase;
+
+    @Column(name = "TLPISO", length = 10)
+    private String floor;
+
+    @Column(name = "TLPUERTA", length = 10)
+    private String door;
+
+    @Column(name = "PCTRANSMIS", precision = 5, scale = 2)
+    private BigDecimal transmissionPercentage;
+
     @Column(name = "PTDECLARAD", precision = 15, scale = 2)
-    private BigDecimal declaredAmount;
+    private BigDecimal declaredValue;
 
     @Column(name = "PTCOMPROBA", precision = 15, scale = 2)
-    private BigDecimal verifiedAmount;
+    private BigDecimal verifiedValue;
 
     @Column(name = "TLOBSERVAC", length = 500)
     private String observations;
 
-    @Column(name = "PCTRANSMIS", precision = 5, scale = 2)
-    private BigDecimal transmissionPercentage;
+    @Column(name = "CDPOSBIEN2", length = 1)
+    private String assetPosition;
 
     public BusinessAsset() {
     }
@@ -111,12 +116,12 @@ public class BusinessAsset implements Serializable {
         this.assetSequence = assetSequence;
     }
 
-    public String getIsBusinessActivity() {
-        return isBusinessActivity;
+    public String getBusinessActivity() {
+        return businessActivity;
     }
 
-    public void setIsBusinessActivity(String isBusinessActivity) {
-        this.isBusinessActivity = isBusinessActivity;
+    public void setBusinessActivity(String businessActivity) {
+        this.businessActivity = businessActivity;
     }
 
     public String getActivityCode() {
@@ -127,12 +132,12 @@ public class BusinessAsset implements Serializable {
         this.activityCode = activityCode;
     }
 
-    public String getAssetDescription() {
-        return assetDescription;
+    public String getBusinessDescription() {
+        return businessDescription;
     }
 
-    public void setAssetDescription(String assetDescription) {
-        this.assetDescription = assetDescription;
+    public void setBusinessDescription(String businessDescription) {
+        this.businessDescription = businessDescription;
     }
 
     public String getHasReduction() {
@@ -143,12 +148,12 @@ public class BusinessAsset implements Serializable {
         this.hasReduction = hasReduction;
     }
 
-    public String getIsAffectedAsset() {
-        return isAffectedAsset;
+    public String getAffectedAsset() {
+        return affectedAsset;
     }
 
-    public void setIsAffectedAsset(String isAffectedAsset) {
-        this.isAffectedAsset = isAffectedAsset;
+    public void setAffectedAsset(String affectedAsset) {
+        this.affectedAsset = affectedAsset;
     }
 
     public String getProvinceCode() {
@@ -199,20 +204,52 @@ public class BusinessAsset implements Serializable {
         this.postalCode = postalCode;
     }
 
-    public BigDecimal getDeclaredAmount() {
-        return declaredAmount;
+    public String getStaircase() {
+        return staircase;
     }
 
-    public void setDeclaredAmount(BigDecimal declaredAmount) {
-        this.declaredAmount = declaredAmount;
+    public void setStaircase(String staircase) {
+        this.staircase = staircase;
     }
 
-    public BigDecimal getVerifiedAmount() {
-        return verifiedAmount;
+    public String getFloor() {
+        return floor;
     }
 
-    public void setVerifiedAmount(BigDecimal verifiedAmount) {
-        this.verifiedAmount = verifiedAmount;
+    public void setFloor(String floor) {
+        this.floor = floor;
+    }
+
+    public String getDoor() {
+        return door;
+    }
+
+    public void setDoor(String door) {
+        this.door = door;
+    }
+
+    public BigDecimal getTransmissionPercentage() {
+        return transmissionPercentage;
+    }
+
+    public void setTransmissionPercentage(BigDecimal transmissionPercentage) {
+        this.transmissionPercentage = transmissionPercentage;
+    }
+
+    public BigDecimal getDeclaredValue() {
+        return declaredValue;
+    }
+
+    public void setDeclaredValue(BigDecimal declaredValue) {
+        this.declaredValue = declaredValue;
+    }
+
+    public BigDecimal getVerifiedValue() {
+        return verifiedValue;
+    }
+
+    public void setVerifiedValue(BigDecimal verifiedValue) {
+        this.verifiedValue = verifiedValue;
     }
 
     public String getObservations() {
@@ -223,11 +260,11 @@ public class BusinessAsset implements Serializable {
         this.observations = observations;
     }
 
-    public BigDecimal getTransmissionPercentage() {
-        return transmissionPercentage;
+    public String getAssetPosition() {
+        return assetPosition;
     }
 
-    public void setTransmissionPercentage(BigDecimal transmissionPercentage) {
-        this.transmissionPercentage = transmissionPercentage;
+    public void setAssetPosition(String assetPosition) {
+        this.assetPosition = assetPosition;
     }
 }

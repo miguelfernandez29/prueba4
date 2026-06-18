@@ -3,14 +3,14 @@ package com.example.app.service;
 import com.example.app.dto.AssetDocumentDTO;
 import com.example.app.entity.AssetDocument;
 import com.example.app.entity.AssetDocumentId;
-import com.example.app.exception.ResourceNotFoundException;
-import com.example.app.exception.ValidationException;
+import com.example.app.entity.GenericData;
 import com.example.app.repository.AssetDocumentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.app.repository.GenericDataRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,147 +19,164 @@ import java.util.stream.Collectors;
 @Transactional
 public class AssetDocumentService {
 
+    private static final BigDecimal MAX_VALUE = new BigDecimal("999999999999.99");
+    private static final String ASSET_NATURE_DATA_TYPE = "110";
+    private static final String ASSET_POSITION_DATA_TYPE = "104";
+
     private final AssetDocumentRepository assetDocumentRepository;
-    private final AssetValidationService validationService;
-    private final AssetCalculationService calculationService;
+    private final GenericDataRepository genericDataRepository;
 
-    @Autowired
     public AssetDocumentService(AssetDocumentRepository assetDocumentRepository,
-                                 AssetValidationService validationService,
-                                 AssetCalculationService calculationService) {
+                                 GenericDataRepository genericDataRepository) {
         this.assetDocumentRepository = assetDocumentRepository;
-        this.validationService = validationService;
-        this.calculationService = calculationService;
+        this.genericDataRepository = genericDataRepository;
     }
 
-    public List<AssetDocumentDTO> findByDocument(String presentationYear, String taxType, String presentationCode) {
-        List<AssetDocument> assets = assetDocumentRepository
-                .findByPresentationYearAndTaxTypeAndPresentationCode(presentationYear, taxType, presentationCode);
-        return assets.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+    public List<AssetDocumentDTO> findByDeclaration(String presentationYear, String taxType, String presentationCode) {
+        List<AssetDocument> assets = assetDocumentRepository.findByPresentationYearAndTaxTypeAndPresentationCode(
+                presentationYear, taxType, presentationCode);
+        return assets.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public AssetDocumentDTO findById(String presentationYear, String taxType, 
-                                      String presentationCode, String assetSequence) {
+    public Optional<AssetDocumentDTO> findById(String presentationYear, String taxType,
+                                                String presentationCode, String assetSequence) {
         AssetDocumentId id = new AssetDocumentId(presentationYear, taxType, presentationCode, assetSequence);
-        AssetDocument asset = assetDocumentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Asset not found"));
-        return convertToDTO(asset);
+        return assetDocumentRepository.findById(id).map(this::toDTO);
     }
 
     public AssetDocumentDTO create(AssetDocumentDTO dto) {
-        validateForCreate(dto);
-        
-        String paddedSequence = calculationService.padAssetSequence(dto.getAssetSequence());
-        dto.setAssetSequence(paddedSequence);
-        
-        Long count = assetDocumentRepository.countByKey(
-                dto.getPresentationYear(), dto.getTaxType(), 
-                dto.getPresentationCode(), dto.getAssetSequence());
-        
+        validateAssetNature(dto.getAssetNature());
+        validateAssetPosition(dto.getAssetPosition());
+        validateTransmissionPercentage(dto.getTransmissionPercentage());
+        validateMonetaryValue(dto.getDeclaredValue(), "Declared value");
+        validateMonetaryValue(dto.getVerifiedValue(), "Verified value");
+
+        String sequence = generateNextSequence(dto.getPresentationYear(), dto.getTaxType(), dto.getPresentationCode());
+        dto.setAssetSequence(sequence);
+
+        Long count = assetDocumentRepository.countByKey(dto.getPresentationYear(), dto.getTaxType(),
+                dto.getPresentationCode(), sequence);
         if (count > 0) {
-            throw new ValidationException("Asset already exists. Use modify instead.");
+            throw new IllegalStateException("Asset already exists. Use modify instead.");
         }
-        
-        AssetDocument asset = convertToEntity(dto);
-        asset = assetDocumentRepository.save(asset);
-        return convertToDTO(asset);
+
+        if (dto.getTransmissionPercentage() == null) {
+            dto.setTransmissionPercentage(new BigDecimal("100.00"));
+        }
+
+        AssetDocument entity = toEntity(dto);
+        entity = assetDocumentRepository.save(entity);
+        return toDTO(entity);
     }
 
     public AssetDocumentDTO update(AssetDocumentDTO dto) {
-        validateForUpdate(dto);
-        
-        AssetDocumentId id = new AssetDocumentId(
-                dto.getPresentationYear(), dto.getTaxType(),
+        AssetDocumentId id = new AssetDocumentId(dto.getPresentationYear(), dto.getTaxType(),
                 dto.getPresentationCode(), dto.getAssetSequence());
-        
+
         AssetDocument existing = assetDocumentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Asset not found"));
-        
-        Optional<AssetDocument> verified = assetDocumentRepository.findVerifiedAsset(
-                dto.getPresentationYear(), dto.getTaxType(),
-                dto.getPresentationCode(), dto.getAssetSequence());
-        
-        if (verified.isPresent()) {
-            updateVerifiedAsset(existing, dto);
-        } else {
-            updateAsset(existing, dto);
-        }
-        
+                .orElseThrow(() -> new IllegalArgumentException("Asset not found"));
+
+        validateTransmissionPercentage(dto.getTransmissionPercentage());
+        validateMonetaryValue(dto.getDeclaredValue(), "Declared value");
+        validateMonetaryValue(dto.getVerifiedValue(), "Verified value");
+
+        existing.setAssetNature(dto.getAssetNature());
+        existing.setAssetPosition(dto.getAssetPosition());
+        existing.setTransmissionPercentage(dto.getTransmissionPercentage());
+        existing.setDeclaredValue(dto.getDeclaredValue());
+        existing.setVerifiedValue(dto.getVerifiedValue());
+        existing.setConformityIndicator(dto.getConformityIndicator());
+        existing.setReferenceValueSituation(dto.getReferenceValueSituation());
+        existing.setHasReferenceValue(dto.getHasReferenceValue());
+        existing.setReferenceValue(dto.getReferenceValue());
+        existing.setAssetType(dto.getAssetType());
+        existing.setObservations(dto.getObservations());
+
         existing = assetDocumentRepository.save(existing);
-        return convertToDTO(existing);
+        return toDTO(existing);
     }
 
-    public void delete(String presentationYear, String taxType, 
-                       String presentationCode, String assetSequence) {
+    public void delete(String presentationYear, String taxType, String presentationCode, String assetSequence) {
         AssetDocumentId id = new AssetDocumentId(presentationYear, taxType, presentationCode, assetSequence);
-        
         if (!assetDocumentRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Asset not found");
+            throw new IllegalArgumentException("Asset not found");
         }
-        
         assetDocumentRepository.deleteById(id);
     }
 
-    public String getNextAssetSequence(String presentationYear, String taxType, String presentationCode) {
-        Integer next = assetDocumentRepository.findNextAssetSequence(presentationYear, taxType, presentationCode);
-        return String.format("%03d", next);
-    }
-
-    public boolean isAssetVerified(String presentationYear, String taxType, 
+    public boolean isAssetVerified(String presentationYear, String taxType,
                                     String presentationCode, String assetSequence) {
-        return assetDocumentRepository.findVerifiedAsset(
-                presentationYear, taxType, presentationCode, assetSequence).isPresent();
+        return assetDocumentRepository.findVerifiedAsset(presentationYear, taxType, presentationCode, assetSequence)
+                .isPresent();
     }
 
-    private void validateForCreate(AssetDocumentDTO dto) {
-        if (dto.getAssetSequence() == null || dto.getAssetSequence().isEmpty()) {
-            throw new ValidationException("Asset sequence is required");
+    public BigDecimal calculateProportionalValue(BigDecimal verifiedValue, BigDecimal transmissionPercentage, int decimals) {
+        if (verifiedValue == null || transmissionPercentage == null) {
+            return null;
         }
-        validationService.validateAssetNature(dto.getAssetNature(), null);
-        validationService.validateAssetPosition(dto.getAssetPosition());
-        validationService.validateTransmissionPercentage(dto.getTransmissionPercentage());
-        validationService.validateAmount(dto.getDeclaredAmount(), "Declared amount");
-        validationService.validateAmount(dto.getVerifiedAmount(), "Verified amount");
+        return verifiedValue.multiply(transmissionPercentage)
+                .divide(new BigDecimal("100"), decimals, RoundingMode.HALF_UP);
     }
 
-    private void validateForUpdate(AssetDocumentDTO dto) {
-        validationService.validateTransmissionPercentage(dto.getTransmissionPercentage());
-        validationService.validateAmount(dto.getDeclaredAmount(), "Declared amount");
-        validationService.validateAmount(dto.getVerifiedAmount(), "Verified amount");
-        validationService.validateVerifiedAmountNotZero(dto.getVerifiedAmount());
+    public String calculateConformity(String hasReferenceValue, String isReferenceValid, BigDecimal referenceValue,
+                                       BigDecimal declaredValue) {
+        if ("S".equals(hasReferenceValue) && "S".equals(isReferenceValid) && referenceValue != null) {
+            if (declaredValue != null && declaredValue.compareTo(referenceValue) >= 0) {
+                return "S";
+            }
+        }
+        return "N";
     }
 
-    private void updateAsset(AssetDocument existing, AssetDocumentDTO dto) {
-        if (dto.getAssetNature() != null) {
-            existing.setAssetNature(dto.getAssetNature());
-        }
-        if (dto.getAssetPosition() != null) {
-            existing.setAssetPosition(dto.getAssetPosition());
-        }
-        if (dto.getTransmissionPercentage() != null) {
-            existing.setTransmissionPercentage(dto.getTransmissionPercentage());
-        }
-        if (dto.getDeclaredAmount() != null) {
-            existing.setDeclaredAmount(dto.getDeclaredAmount());
-        }
-        if (dto.getVerifiedAmount() != null) {
-            existing.setVerifiedAmount(dto.getVerifiedAmount());
-        }
-        existing.setReferenceValueStatus(dto.getReferenceValueStatus());
-        existing.setHasReferenceValue(dto.getHasReferenceValue());
-        existing.setReferenceValueValid(dto.getReferenceValueValid());
-        existing.setReferenceValue(dto.getReferenceValue());
+    private String generateNextSequence(String presentationYear, String taxType, String presentationCode) {
+        Integer maxSeq = assetDocumentRepository.findMaxAssetSequence(presentationYear, taxType, presentationCode);
+        int nextSeq = (maxSeq == null ? 0 : maxSeq) + 1;
+        return String.format("%03d", nextSeq);
     }
 
-    private void updateVerifiedAsset(AssetDocument existing, AssetDocumentDTO dto) {
-        if (dto.getDeclaredAmount() != null) {
-            existing.setDeclaredAmount(dto.getDeclaredAmount());
+    private void validateAssetNature(String assetNature) {
+        if (assetNature == null || assetNature.trim().isEmpty()) {
+            throw new IllegalArgumentException("Asset nature is required");
+        }
+        Optional<GenericData> data = genericDataRepository.findByDataTypeAndDataCode(ASSET_NATURE_DATA_TYPE, assetNature);
+        if (!data.isPresent()) {
+            throw new IllegalArgumentException("Invalid asset nature code: " + assetNature);
         }
     }
 
-    private AssetDocumentDTO convertToDTO(AssetDocument entity) {
+    private void validateAssetPosition(String assetPosition) {
+        if (assetPosition == null || assetPosition.trim().isEmpty()) {
+            throw new IllegalArgumentException("Asset position is required");
+        }
+        Optional<GenericData> data = genericDataRepository.findByDataTypeAndDataCode(ASSET_POSITION_DATA_TYPE, assetPosition);
+        if (!data.isPresent()) {
+            throw new IllegalArgumentException("Invalid asset position code. Allowed values: P or G");
+        }
+    }
+
+    private void validateTransmissionPercentage(BigDecimal percentage) {
+        if (percentage != null) {
+            if (percentage.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Transmission percentage must be greater than 0%");
+            }
+            if (percentage.compareTo(new BigDecimal("100")) > 0) {
+                throw new IllegalArgumentException("Transmission percentage cannot exceed 100%");
+            }
+        }
+    }
+
+    private void validateMonetaryValue(BigDecimal value, String fieldName) {
+        if (value != null) {
+            if (value.compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException(fieldName + " cannot be negative");
+            }
+            if (value.compareTo(MAX_VALUE) > 0) {
+                throw new IllegalArgumentException(fieldName + " exceeds maximum allowed value: 999,999,999,999.99");
+            }
+        }
+    }
+
+    private AssetDocumentDTO toDTO(AssetDocument entity) {
         AssetDocumentDTO dto = new AssetDocumentDTO();
         dto.setPresentationYear(entity.getPresentationYear());
         dto.setTaxType(entity.getTaxType());
@@ -168,27 +185,32 @@ public class AssetDocumentService {
         dto.setAssetNature(entity.getAssetNature());
         dto.setAssetPosition(entity.getAssetPosition());
         dto.setTransmissionPercentage(entity.getTransmissionPercentage());
-        dto.setDeclaredAmount(entity.getDeclaredAmount());
-        dto.setVerifiedAmount(entity.getVerifiedAmount());
-        dto.setVerificationDate(entity.getVerificationDate());
-        dto.setValuationNumber(entity.getValuationNumber());
-        dto.setReferenceValueStatus(entity.getReferenceValueStatus());
+        dto.setDeclaredValue(entity.getDeclaredValue());
+        dto.setVerifiedValue(entity.getVerifiedValue());
+        dto.setConformityIndicator(entity.getConformityIndicator());
+        dto.setReferenceValueSituation(entity.getReferenceValueSituation());
         dto.setHasReferenceValue(entity.getHasReferenceValue());
-        dto.setReferenceValueValid(entity.getReferenceValueValid());
         dto.setReferenceValue(entity.getReferenceValue());
-        
-        if (entity.getVerifiedAmount() != null && entity.getTransmissionPercentage() != null) {
-            dto.setProportionalVerifiedAmount(
-                    calculationService.calculateProportionalVerifiedAmount(
-                            entity.getVerifiedAmount(), entity.getTransmissionPercentage()));
+        dto.setVerificationDate(entity.getVerificationDate());
+        dto.setVerificationId(entity.getVerificationId());
+        dto.setBusinessAssetSequence(entity.getBusinessAssetSequence());
+        dto.setAssetType(entity.getAssetType());
+        dto.setObservations(entity.getObservations());
+
+        if (entity.getAssetNature() != null) {
+            genericDataRepository.findByDataTypeAndDataCode(ASSET_NATURE_DATA_TYPE, entity.getAssetNature())
+                    .ifPresent(data -> dto.setAssetNatureDescription(data.getAbbreviation()));
         }
-        
-        dto.setAssetNatureDescription(getAssetNatureDescription(entity.getAssetNature()));
-        
+
+        if (entity.getVerifiedValue() != null && entity.getTransmissionPercentage() != null) {
+            dto.setProportionalVerifiedValue(calculateProportionalValue(
+                    entity.getVerifiedValue(), entity.getTransmissionPercentage(), 2));
+        }
+
         return dto;
     }
 
-    private AssetDocument convertToEntity(AssetDocumentDTO dto) {
+    private AssetDocument toEntity(AssetDocumentDTO dto) {
         AssetDocument entity = new AssetDocument();
         entity.setPresentationYear(dto.getPresentationYear());
         entity.setTaxType(dto.getTaxType());
@@ -196,32 +218,18 @@ public class AssetDocumentService {
         entity.setAssetSequence(dto.getAssetSequence());
         entity.setAssetNature(dto.getAssetNature());
         entity.setAssetPosition(dto.getAssetPosition());
-        entity.setTransmissionPercentage(dto.getTransmissionPercentage() != null ? 
-                dto.getTransmissionPercentage() : new BigDecimal("100"));
-        entity.setDeclaredAmount(dto.getDeclaredAmount());
-        entity.setVerifiedAmount(dto.getVerifiedAmount());
-        entity.setReferenceValueStatus(dto.getReferenceValueStatus());
+        entity.setTransmissionPercentage(dto.getTransmissionPercentage());
+        entity.setDeclaredValue(dto.getDeclaredValue());
+        entity.setVerifiedValue(dto.getVerifiedValue());
+        entity.setConformityIndicator(dto.getConformityIndicator());
+        entity.setReferenceValueSituation(dto.getReferenceValueSituation());
         entity.setHasReferenceValue(dto.getHasReferenceValue());
-        entity.setReferenceValueValid(dto.getReferenceValueValid());
         entity.setReferenceValue(dto.getReferenceValue());
+        entity.setVerificationDate(dto.getVerificationDate());
+        entity.setVerificationId(dto.getVerificationId());
+        entity.setBusinessAssetSequence(dto.getBusinessAssetSequence());
+        entity.setAssetType(dto.getAssetType());
+        entity.setObservations(dto.getObservations());
         return entity;
-    }
-
-    private String getAssetNatureDescription(String nature) {
-        if (nature == null) {
-            return null;
-        }
-        switch (nature) {
-            case "U": return "Urban Property";
-            case "R": return "Rustic Property";
-            case "V": return "Vehicle";
-            case "E": return "Listed Securities";
-            case "N": return "Unlisted Securities";
-            case "C": return "Bank Account";
-            case "A": return "Business Asset";
-            case "T":
-            case "O": return "Other Asset";
-            default: return "Unknown";
-        }
     }
 }

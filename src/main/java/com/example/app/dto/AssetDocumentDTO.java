@@ -1,66 +1,52 @@
 package com.example.app.dto;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.DecimalMax;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class AssetDocumentDTO {
 
     @NotBlank(message = "Presentation year is required")
-    @Size(max = 4)
     private String presentationYear;
 
     @NotBlank(message = "Tax type is required")
-    @Size(max = 2)
     private String taxType;
 
     @NotBlank(message = "Presentation code is required")
-    @Size(max = 14)
     private String presentationCode;
 
-    @NotBlank(message = "Asset sequence is required")
-    @Size(max = 3)
     private String assetSequence;
 
-    @Size(max = 1)
+    @NotBlank(message = "Asset nature is required")
     private String assetNature;
 
-    @Size(max = 1)
+    @NotBlank(message = "Asset position is required")
     private String assetPosition;
 
     @DecimalMin(value = "0.00", message = "Transmission percentage must be at least 0")
     @DecimalMax(value = "100.00", message = "Transmission percentage cannot exceed 100")
     private BigDecimal transmissionPercentage;
 
-    @DecimalMax(value = "999999999999.99", message = "Maximum allowed value is 999,999,999,999.99")
-    private BigDecimal declaredAmount;
+    @DecimalMin(value = "0.00", message = "Declared value must be positive")
+    @DecimalMax(value = "999999999999.99", message = "Declared value exceeds maximum")
+    private BigDecimal declaredValue;
 
-    @DecimalMax(value = "999999999999.99", message = "Maximum allowed value is 999,999,999,999.99")
-    private BigDecimal verifiedAmount;
+    @DecimalMin(value = "0.00", message = "Verified value must be positive")
+    @DecimalMax(value = "999999999999.99", message = "Verified value exceeds maximum")
+    private BigDecimal verifiedValue;
 
-    private LocalDate verificationDate;
-
-    private Integer valuationNumber;
-
-    private String referenceValueStatus;
-
+    private String conformityIndicator;
+    private String referenceValueSituation;
     private String hasReferenceValue;
-
-    private String referenceValueValid;
-
     private BigDecimal referenceValue;
-
-    private BigDecimal proportionalVerifiedAmount;
-
+    private LocalDate verificationDate;
+    private String verificationId;
+    private String businessAssetSequence;
+    private String assetType;
+    private String observations;
     private String assetNatureDescription;
-
-    private boolean hasReduction;
-
-    private boolean conformity;
+    private BigDecimal proportionalVerifiedValue;
+    private String hasReduction;
 
     public AssetDocumentDTO() {
     }
@@ -121,44 +107,36 @@ public class AssetDocumentDTO {
         this.transmissionPercentage = transmissionPercentage;
     }
 
-    public BigDecimal getDeclaredAmount() {
-        return declaredAmount;
+    public BigDecimal getDeclaredValue() {
+        return declaredValue;
     }
 
-    public void setDeclaredAmount(BigDecimal declaredAmount) {
-        this.declaredAmount = declaredAmount;
+    public void setDeclaredValue(BigDecimal declaredValue) {
+        this.declaredValue = declaredValue;
     }
 
-    public BigDecimal getVerifiedAmount() {
-        return verifiedAmount;
+    public BigDecimal getVerifiedValue() {
+        return verifiedValue;
     }
 
-    public void setVerifiedAmount(BigDecimal verifiedAmount) {
-        this.verifiedAmount = verifiedAmount;
+    public void setVerifiedValue(BigDecimal verifiedValue) {
+        this.verifiedValue = verifiedValue;
     }
 
-    public LocalDate getVerificationDate() {
-        return verificationDate;
+    public String getConformityIndicator() {
+        return conformityIndicator;
     }
 
-    public void setVerificationDate(LocalDate verificationDate) {
-        this.verificationDate = verificationDate;
+    public void setConformityIndicator(String conformityIndicator) {
+        this.conformityIndicator = conformityIndicator;
     }
 
-    public Integer getValuationNumber() {
-        return valuationNumber;
+    public String getReferenceValueSituation() {
+        return referenceValueSituation;
     }
 
-    public void setValuationNumber(Integer valuationNumber) {
-        this.valuationNumber = valuationNumber;
-    }
-
-    public String getReferenceValueStatus() {
-        return referenceValueStatus;
-    }
-
-    public void setReferenceValueStatus(String referenceValueStatus) {
-        this.referenceValueStatus = referenceValueStatus;
+    public void setReferenceValueSituation(String referenceValueSituation) {
+        this.referenceValueSituation = referenceValueSituation;
     }
 
     public String getHasReferenceValue() {
@@ -169,14 +147,6 @@ public class AssetDocumentDTO {
         this.hasReferenceValue = hasReferenceValue;
     }
 
-    public String getReferenceValueValid() {
-        return referenceValueValid;
-    }
-
-    public void setReferenceValueValid(String referenceValueValid) {
-        this.referenceValueValid = referenceValueValid;
-    }
-
     public BigDecimal getReferenceValue() {
         return referenceValue;
     }
@@ -185,12 +155,44 @@ public class AssetDocumentDTO {
         this.referenceValue = referenceValue;
     }
 
-    public BigDecimal getProportionalVerifiedAmount() {
-        return proportionalVerifiedAmount;
+    public LocalDate getVerificationDate() {
+        return verificationDate;
     }
 
-    public void setProportionalVerifiedAmount(BigDecimal proportionalVerifiedAmount) {
-        this.proportionalVerifiedAmount = proportionalVerifiedAmount;
+    public void setVerificationDate(LocalDate verificationDate) {
+        this.verificationDate = verificationDate;
+    }
+
+    public String getVerificationId() {
+        return verificationId;
+    }
+
+    public void setVerificationId(String verificationId) {
+        this.verificationId = verificationId;
+    }
+
+    public String getBusinessAssetSequence() {
+        return businessAssetSequence;
+    }
+
+    public void setBusinessAssetSequence(String businessAssetSequence) {
+        this.businessAssetSequence = businessAssetSequence;
+    }
+
+    public String getAssetType() {
+        return assetType;
+    }
+
+    public void setAssetType(String assetType) {
+        this.assetType = assetType;
+    }
+
+    public String getObservations() {
+        return observations;
+    }
+
+    public void setObservations(String observations) {
+        this.observations = observations;
     }
 
     public String getAssetNatureDescription() {
@@ -201,19 +203,19 @@ public class AssetDocumentDTO {
         this.assetNatureDescription = assetNatureDescription;
     }
 
-    public boolean isHasReduction() {
+    public BigDecimal getProportionalVerifiedValue() {
+        return proportionalVerifiedValue;
+    }
+
+    public void setProportionalVerifiedValue(BigDecimal proportionalVerifiedValue) {
+        this.proportionalVerifiedValue = proportionalVerifiedValue;
+    }
+
+    public String getHasReduction() {
         return hasReduction;
     }
 
-    public void setHasReduction(boolean hasReduction) {
+    public void setHasReduction(String hasReduction) {
         this.hasReduction = hasReduction;
-    }
-
-    public boolean isConformity() {
-        return conformity;
-    }
-
-    public void setConformity(boolean conformity) {
-        this.conformity = conformity;
     }
 }

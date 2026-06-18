@@ -1,51 +1,46 @@
-package com.example.app.entity;
+package com.example.app.dto;
 
-import javax.persistence.*;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "GATA_BIENCUBA")
-@IdClass(AssetDocumentId.class)
-public class BankAccount {
+public class BankAccountDTO {
 
-    @Id
-    @Column(name = "AAPRESENTA", length = 4)
+    @NotBlank(message = "Presentation year is required")
     private String presentationYear;
 
-    @Id
-    @Column(name = "VFTIPOIMPU", length = 2)
+    @NotBlank(message = "Tax type is required")
     private String taxType;
 
-    @Id
-    @Column(name = "CDPRESENTA", length = 14)
+    @NotBlank(message = "Presentation code is required")
     private String presentationCode;
 
-    @Id
-    @Column(name = "CDSECUBIEN", length = 3)
     private String assetSequence;
 
-    @Column(name = "TLENTIDEPO", length = 100)
+    @NotBlank(message = "Financial institution is required")
     private String financialInstitution;
 
-    @Column(name = "TLDEPOSITO", length = 34)
+    @NotBlank(message = "Account number is required")
     private String accountNumber;
 
-    @Column(name = "PCTRANSMIS", precision = 5, scale = 2)
+    @DecimalMin(value = "0.00", message = "Transmission percentage must be at least 0")
+    @DecimalMax(value = "100.00", message = "Transmission percentage cannot exceed 100")
     private BigDecimal transmissionPercentage;
 
-    @Column(name = "PTDECLARAD", precision = 15, scale = 2)
+    @NotNull(message = "Declared value is required")
+    @DecimalMin(value = "0.00", message = "Declared value must be positive")
+    @DecimalMax(value = "999999999999.99", message = "Declared value exceeds maximum")
     private BigDecimal declaredValue;
 
-    @Column(name = "PTCOMPROBA", precision = 15, scale = 2)
+    @DecimalMax(value = "999999999999.99", message = "Verified value exceeds maximum")
     private BigDecimal verifiedValue;
 
-    @Column(name = "TLOBSERVAC", length = 500)
+    private BigDecimal proportionalVerifiedValue;
     private String observations;
-
-    @Column(name = "CDPOSBIEN2", length = 1)
     private String assetPosition;
+    private String assetNature;
+    private String assetNatureDescription;
 
-    public BankAccount() {
+    public BankAccountDTO() {
     }
 
     public String getPresentationYear() {
@@ -120,6 +115,14 @@ public class BankAccount {
         this.verifiedValue = verifiedValue;
     }
 
+    public BigDecimal getProportionalVerifiedValue() {
+        return proportionalVerifiedValue;
+    }
+
+    public void setProportionalVerifiedValue(BigDecimal proportionalVerifiedValue) {
+        this.proportionalVerifiedValue = proportionalVerifiedValue;
+    }
+
     public String getObservations() {
         return observations;
     }
@@ -134,5 +137,21 @@ public class BankAccount {
 
     public void setAssetPosition(String assetPosition) {
         this.assetPosition = assetPosition;
+    }
+
+    public String getAssetNature() {
+        return assetNature;
+    }
+
+    public void setAssetNature(String assetNature) {
+        this.assetNature = assetNature;
+    }
+
+    public String getAssetNatureDescription() {
+        return assetNatureDescription;
+    }
+
+    public void setAssetNatureDescription(String assetNatureDescription) {
+        this.assetNatureDescription = assetNatureDescription;
     }
 }

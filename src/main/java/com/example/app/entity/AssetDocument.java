@@ -1,20 +1,13 @@
 package com.example.app.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Column;
-import java.io.Serializable;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "GATA_BIENDOCU")
 @IdClass(AssetDocumentId.class)
-public class AssetDocument implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class AssetDocument {
 
     @Id
     @Column(name = "AAPRESENTA", length = 4)
@@ -42,34 +35,37 @@ public class AssetDocument implements Serializable {
     private BigDecimal transmissionPercentage;
 
     @Column(name = "PTDECLARAD", precision = 15, scale = 2)
-    private BigDecimal declaredAmount;
+    private BigDecimal declaredValue;
 
     @Column(name = "PTCOMPROBA", precision = 15, scale = 2)
-    private BigDecimal verifiedAmount;
+    private BigDecimal verifiedValue;
 
-    @Column(name = "FCCOMPROBA")
-    private LocalDate verificationDate;
-
-    @Column(name = "NMVALORACI")
-    private Integer valuationNumber;
+    @Column(name = "ITCONFORME", length = 1)
+    private String conformityIndicator;
 
     @Column(name = "CDSITUVREF", length = 2)
-    private String referenceValueStatus;
+    private String referenceValueSituation;
 
     @Column(name = "ITVALORREF", length = 1)
     private String hasReferenceValue;
 
-    @Column(name = "ITVRVALIDO", length = 1)
-    private String referenceValueValid;
-
     @Column(name = "PTVALORREF", precision = 15, scale = 2)
     private BigDecimal referenceValue;
 
-    @Column(name = "CDSECUACEM", length = 3)
-    private String linkedBusinessAssetSequence;
+    @Column(name = "FCCOMPROBA")
+    private LocalDate verificationDate;
 
     @Column(name = "IDCOMPROBA", length = 20)
     private String verificationId;
+
+    @Column(name = "CDSECUACEM", length = 3)
+    private String businessAssetSequence;
+
+    @Column(name = "CDTIPOBIEN", length = 2)
+    private String assetType;
+
+    @Column(name = "TLOBSERVAC", length = 500)
+    private String observations;
 
     public AssetDocument() {
     }
@@ -130,44 +126,36 @@ public class AssetDocument implements Serializable {
         this.transmissionPercentage = transmissionPercentage;
     }
 
-    public BigDecimal getDeclaredAmount() {
-        return declaredAmount;
+    public BigDecimal getDeclaredValue() {
+        return declaredValue;
     }
 
-    public void setDeclaredAmount(BigDecimal declaredAmount) {
-        this.declaredAmount = declaredAmount;
+    public void setDeclaredValue(BigDecimal declaredValue) {
+        this.declaredValue = declaredValue;
     }
 
-    public BigDecimal getVerifiedAmount() {
-        return verifiedAmount;
+    public BigDecimal getVerifiedValue() {
+        return verifiedValue;
     }
 
-    public void setVerifiedAmount(BigDecimal verifiedAmount) {
-        this.verifiedAmount = verifiedAmount;
+    public void setVerifiedValue(BigDecimal verifiedValue) {
+        this.verifiedValue = verifiedValue;
     }
 
-    public LocalDate getVerificationDate() {
-        return verificationDate;
+    public String getConformityIndicator() {
+        return conformityIndicator;
     }
 
-    public void setVerificationDate(LocalDate verificationDate) {
-        this.verificationDate = verificationDate;
+    public void setConformityIndicator(String conformityIndicator) {
+        this.conformityIndicator = conformityIndicator;
     }
 
-    public Integer getValuationNumber() {
-        return valuationNumber;
+    public String getReferenceValueSituation() {
+        return referenceValueSituation;
     }
 
-    public void setValuationNumber(Integer valuationNumber) {
-        this.valuationNumber = valuationNumber;
-    }
-
-    public String getReferenceValueStatus() {
-        return referenceValueStatus;
-    }
-
-    public void setReferenceValueStatus(String referenceValueStatus) {
-        this.referenceValueStatus = referenceValueStatus;
+    public void setReferenceValueSituation(String referenceValueSituation) {
+        this.referenceValueSituation = referenceValueSituation;
     }
 
     public String getHasReferenceValue() {
@@ -178,14 +166,6 @@ public class AssetDocument implements Serializable {
         this.hasReferenceValue = hasReferenceValue;
     }
 
-    public String getReferenceValueValid() {
-        return referenceValueValid;
-    }
-
-    public void setReferenceValueValid(String referenceValueValid) {
-        this.referenceValueValid = referenceValueValid;
-    }
-
     public BigDecimal getReferenceValue() {
         return referenceValue;
     }
@@ -194,12 +174,12 @@ public class AssetDocument implements Serializable {
         this.referenceValue = referenceValue;
     }
 
-    public String getLinkedBusinessAssetSequence() {
-        return linkedBusinessAssetSequence;
+    public LocalDate getVerificationDate() {
+        return verificationDate;
     }
 
-    public void setLinkedBusinessAssetSequence(String linkedBusinessAssetSequence) {
-        this.linkedBusinessAssetSequence = linkedBusinessAssetSequence;
+    public void setVerificationDate(LocalDate verificationDate) {
+        this.verificationDate = verificationDate;
     }
 
     public String getVerificationId() {
@@ -208,5 +188,29 @@ public class AssetDocument implements Serializable {
 
     public void setVerificationId(String verificationId) {
         this.verificationId = verificationId;
+    }
+
+    public String getBusinessAssetSequence() {
+        return businessAssetSequence;
+    }
+
+    public void setBusinessAssetSequence(String businessAssetSequence) {
+        this.businessAssetSequence = businessAssetSequence;
+    }
+
+    public String getAssetType() {
+        return assetType;
+    }
+
+    public void setAssetType(String assetType) {
+        this.assetType = assetType;
+    }
+
+    public String getObservations() {
+        return observations;
+    }
+
+    public void setObservations(String observations) {
+        this.observations = observations;
     }
 }

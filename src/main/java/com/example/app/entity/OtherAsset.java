@@ -1,19 +1,12 @@
 package com.example.app.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Column;
-import java.io.Serializable;
+import javax.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "GATA_BIENOTRO")
 @IdClass(AssetDocumentId.class)
-public class OtherAsset implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class OtherAsset {
 
     @Id
     @Column(name = "AAPRESENTA", length = 4)
@@ -37,35 +30,20 @@ public class OtherAsset implements Serializable {
     @Column(name = "NMUNIDADES")
     private Integer numberOfUnits;
 
-    @Column(name = "ITACTIEMPR", length = 1)
-    private String isBusinessActivity;
-
-    @Column(name = "TLEPIGRAFE", length = 10)
-    private String activityCode;
-
-    @Column(name = "CDTIPOBIEN", length = 2)
-    private String assetType;
-
-    @Column(name = "TLDOMIACTI", length = 200)
-    private String activityAddress;
-
-    @Column(name = "TLENTIDEPO", length = 100)
-    private String depositEntity;
-
-    @Column(name = "TLDEPOSITO", length = 34)
-    private String depositNumber;
+    @Column(name = "PCTRANSMIS", precision = 5, scale = 2)
+    private BigDecimal transmissionPercentage;
 
     @Column(name = "PTDECLARAD", precision = 15, scale = 2)
-    private BigDecimal declaredAmount;
+    private BigDecimal declaredValue;
 
     @Column(name = "PTCOMPROBA", precision = 15, scale = 2)
-    private BigDecimal verifiedAmount;
+    private BigDecimal verifiedValue;
 
     @Column(name = "TLOBSERVAC", length = 500)
     private String observations;
 
-    @Column(name = "PCTRANSMIS", precision = 5, scale = 2)
-    private BigDecimal transmissionPercentage;
+    @Column(name = "CDPOSBIEN2", length = 1)
+    private String assetPosition;
 
     public OtherAsset() {
     }
@@ -118,68 +96,28 @@ public class OtherAsset implements Serializable {
         this.numberOfUnits = numberOfUnits;
     }
 
-    public String getIsBusinessActivity() {
-        return isBusinessActivity;
+    public BigDecimal getTransmissionPercentage() {
+        return transmissionPercentage;
     }
 
-    public void setIsBusinessActivity(String isBusinessActivity) {
-        this.isBusinessActivity = isBusinessActivity;
+    public void setTransmissionPercentage(BigDecimal transmissionPercentage) {
+        this.transmissionPercentage = transmissionPercentage;
     }
 
-    public String getActivityCode() {
-        return activityCode;
+    public BigDecimal getDeclaredValue() {
+        return declaredValue;
     }
 
-    public void setActivityCode(String activityCode) {
-        this.activityCode = activityCode;
+    public void setDeclaredValue(BigDecimal declaredValue) {
+        this.declaredValue = declaredValue;
     }
 
-    public String getAssetType() {
-        return assetType;
+    public BigDecimal getVerifiedValue() {
+        return verifiedValue;
     }
 
-    public void setAssetType(String assetType) {
-        this.assetType = assetType;
-    }
-
-    public String getActivityAddress() {
-        return activityAddress;
-    }
-
-    public void setActivityAddress(String activityAddress) {
-        this.activityAddress = activityAddress;
-    }
-
-    public String getDepositEntity() {
-        return depositEntity;
-    }
-
-    public void setDepositEntity(String depositEntity) {
-        this.depositEntity = depositEntity;
-    }
-
-    public String getDepositNumber() {
-        return depositNumber;
-    }
-
-    public void setDepositNumber(String depositNumber) {
-        this.depositNumber = depositNumber;
-    }
-
-    public BigDecimal getDeclaredAmount() {
-        return declaredAmount;
-    }
-
-    public void setDeclaredAmount(BigDecimal declaredAmount) {
-        this.declaredAmount = declaredAmount;
-    }
-
-    public BigDecimal getVerifiedAmount() {
-        return verifiedAmount;
-    }
-
-    public void setVerifiedAmount(BigDecimal verifiedAmount) {
-        this.verifiedAmount = verifiedAmount;
+    public void setVerifiedValue(BigDecimal verifiedValue) {
+        this.verifiedValue = verifiedValue;
     }
 
     public String getObservations() {
@@ -190,11 +128,11 @@ public class OtherAsset implements Serializable {
         this.observations = observations;
     }
 
-    public BigDecimal getTransmissionPercentage() {
-        return transmissionPercentage;
+    public String getAssetPosition() {
+        return assetPosition;
     }
 
-    public void setTransmissionPercentage(BigDecimal transmissionPercentage) {
-        this.transmissionPercentage = transmissionPercentage;
+    public void setAssetPosition(String assetPosition) {
+        this.assetPosition = assetPosition;
     }
 }
